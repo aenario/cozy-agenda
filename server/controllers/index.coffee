@@ -32,7 +32,7 @@ module.exports.index = (req, res) ->
             if webDavAccount?
                 webDavAccount.domain = instance?.domain or ''
 
-            res.render 'index.jade', imports: """
+            res.render 'index', imports: """
                 window.locale = "#{locale}";
                 window.inittags = #{JSON.stringify tags};
                 window.initevents = #{JSON.stringify events};

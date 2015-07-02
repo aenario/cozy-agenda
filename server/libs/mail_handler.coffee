@@ -1,5 +1,4 @@
 async = require 'async'
-jade = require 'jade'
 fs = require 'fs'
 log = require('printit')
     prefix: 'MailHandler'
@@ -32,27 +31,18 @@ module.exports.sendInvitations = (event, dateChanged, callback) ->
 
             # Prepare mail
             if dateChanged
-                htmlTemplate = localization.getEmailTemplate 'mail_update'
+                htmlKey      = 'mail_update'
                 subjectKey   = 'email update title'
                 templateKey  = 'email update content'
             else
-                htmlTemplate = localization.getEmailTemplate 'mail_invitation'
+                htmlKey      = 'mail_invitation'
                 subjectKey   = 'email invitation title'
                 templateKey  = 'email invitation content'
 
             # Get mail contents
-            subject = localization.t subjectKey, description: event.description
-            url     = "#{domain}public/calendar/events/#{event.id}"
-
-            date          = event.formatStart dateFormat
-            dateFormat    = localization.t dateFormatKey
-            dateFormatKey = if event.isAllDayEvent()
-                'email date format allday'
-            else
-                'email date format'
-
-            {description, place} = event.toJSON()
-            place = if place?.length > 0 then place else false
+            url   = "#{domain}public/calendar/events/#{event.id}"
+            date  = event.formatStart localization.getDateFormat event
+            place = if event.place?.length > 0 then event.place else false
 
             # Build mails
             templateOptions =
@@ -64,22 +54,27 @@ module.exports.sendInvitations = (event, dateChanged, callback) ->
                 date:         date
                 url:          url
 
+
+
             mailOptions =
                 to:      guest.email
-                subject: subject
-                html:    htmlTemplate templateOptions
+                subject: localization.t subjectKey, templateOptions
                 content: localization.t templateKey, templateOptions
 
-            # Send mail through CozyDB API
-            cozydb.api.sendMailFromUser mailOptions, (err) ->
-                if err
-                    log.error "An error occured while sending invitation"
-                    log.error err
-                else
-                    needSaving   = true
-                    guest.status = 'NEEDS-ACTION' # ical = waiting an answer
+            localization.render htmlKey, templateOptions, (err, html) ->
+                return done err if err
+                mailOptions.html = html
 
-                done err
+                # Send mail through CozyDB API
+                cozydb.api.sendMailFromUser mailOptions, (err) ->
+                    if err
+                        log.error "An error occured while sending invitation"
+                        log.error err
+                    else
+                        needSaving   = true
+                        guest.status = 'NEEDS-ACTION' # ical = waiting an answer
+
+                    done err
 
         # Catch errors when doing async foreach
         , (err) ->
@@ -102,32 +97,28 @@ module.exports.sendDeleteNotification = (event, callback) ->
 
         async.eachSeries guestsToInform, (guest, done) ->
 
-            if event.isAllDayEvent()
-                dateFormatKey = 'email date format allday'
-            else
-                dateFormatKey = 'email date format'
-            dateFormat = localization.t dateFormatKey
-            date = event.formatStart dateFormat
-            {description, place} = event.toJSON()
-            place = if place?.length > 0 then place else false
+            date = event.formatStart localization.getDateFormat event
+            place = if event.place?.length > 0 then event.place else false
             templateOptions =
                 displayName: user.name
                 displayEmail: user.email
-                description: description
+                description: event.description
                 place: place
                 date: date
-            htmlTemplate = localization.getEmailTemplate 'mail_delete'
-            subjectKey = 'email delete title'
             mailOptions =
                 to: guest.email
-                subject: localization.t subjectKey, description: event.description
+                subject: localization.t 'email delete title', templateOptions
                 content: localization.t 'email delete content', templateOptions
-                html: htmlTemplate templateOptions
-            cozydb.api.sendMailFromUser mailOptions, (err) ->
-                if err?
-                    log.error "An error occured while sending email"
-                    log.error err
 
-                done err
+            localization.render 'mail_delete', templateOptions, (err, html) ->
+                return done err if err
+                mailOptions.html = html
+
+                cozydb.api.sendMailFromUser mailOptions, (err) ->
+                    if err?
+                        log.error "An error occured while sending email"
+                        log.error err
+
+                    done err
 
         , callback

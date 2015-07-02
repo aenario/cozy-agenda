@@ -77,30 +77,24 @@ task "lint", "Run Coffeelint", ->
             logger.info stdout
 
 buildJade = ->
-    jade = require 'jade'
-    jadeFile = new RegExp '\.jade$'
-    for file in fs.readdirSync './client/'when jadeFile.test file
-        filename = "./client/#{file}"
-        template = fs.readFileSync filename, 'utf8'
-        output = "var jade = require('jade/runtime');\n"
-        output += "module.exports = " + jade.compileClient template, {filename}
-        name = file.replace '.jade', '.js'
-        fs.writeFileSync "./build/client/#{name}", output
+    glob        = require 'glob'
+    prependFile = require 'prepend-file'
+
+    data = """var jade = require('jade/runtime');
+              module.exports = """
+    for file in glob.sync './build/server/views/**/*.js'
+        prependFile.sync file, data
 
 task 'build', 'Build CoffeeScript to Javascript', ->
     logger.options.prefix = 'cake:build'
     logger.info "Start compilation..."
-    command = "coffee -cb --output build/server server && " + \
+    command = "rm -rf build && mkdir build && " + \
+              "coffee -cb --output build/server server && " + \
               "coffee -cb --output build/ server.coffee && " + \
-              "rm -rf build/server/mails/en && " + \
-              "rm -rf build/server/mails/fr && " + \
-              "mkdir build/server/mails/en && " + \
-              "mkdir build/server/mails/fr && " + \
-              "cp server/mails/fr/*.jade build/server/mails/fr/ && " + \
-              "cp server/mails/en/*.jade build/server/mails/en/ && " + \
               "rm -rf build/client && mkdir build/client && " + \
               "coffee -cb --output build/client/app/locales client/app/locales && " + \
-              "cp -R client/public build/client/"
+              "cp -R client/public build/client/ && " + \
+              "./node_modules/.bin/jade -cPDH -o build/server/views server/views"
     exec command, (err, stdout, stderr) ->
         if err
             logger.error "An error has occurred while compiling:\n" + err

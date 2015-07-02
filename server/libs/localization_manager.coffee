@@ -1,4 +1,3 @@
-jade = require 'jade'
 fs = require 'fs'
 Polyglot = require 'node-polyglot'
 cozydb = require 'cozydb'
@@ -13,50 +12,36 @@ class LocalizationManager
     templateCache: {}
 
     # should be run when app starts
-    initialize: (callback = () ->) ->
-        @retrieveLocale (err, locale) =>
-            if err?
-                @polyglot = @getPolyglotByLocale null
-            else
-                @polyglot = @getPolyglotByLocale locale
-                @prepareEmailsTemplate()
-            callback null, @polyglot
+    initialize: (locale, renderer, callback = () ->) ->
+        locale ?= 'en' # default value
 
-    retrieveLocale: (callback) ->
-        cozydb.api.getCozyLocale (err, locale) ->
-            if err? or not locale then locale = 'en' # default value
-            callback err, locale
-
-    getPolyglotByLocale: (locale) ->
         try
             phrases = require "#{LOCALE_PATH}/#{locale}"
         catch err
             phrases = require "#{LOCALE_PATH}/en"
-        return new Polyglot {locale, phrases}
 
-    prepareEmailsTemplate: ->
-        locale = @getLocale()
-        for name in ['mail_invitation', 'mail_update', 'mail_delete']
-            cacheKey = "#{name}_#{locale}"
-            @templateCache[cacheKey] = @buildEmailTemplate name
+        @polyglot = new Polyglot {locale, phrases}
+        callback null, @polyglot
 
     # execute polyglot.t, for server-side localization
     t: (key, params = {}) -> return @polyglot?.t key, params
 
-    buildEmailTemplate: (name) ->
-        filePath = "../mails/#{@polyglot.currentLocale}/#{name}.jade"
-        templatefile = require('path').join __dirname, filePath
-        return jade.compile fs.readFileSync templatefile, 'utf8'
+    setRenderer: (renderer) ->
+        @renderer = renderer
 
-    getEmailTemplate: (name) ->
-        cacheKey = "#{name}_#{@getLocale()}"
-        # builds the template if it doesn't exist
-        unless @templateCache[cacheKey]?
-            @templateCache[cacheKey] = @buildEmailTemplate name
+    getViewName: (name) ->
+        "#{@polyglot.currentLocale}/#{name}"
 
-        return @templateCache[cacheKey]
+    getDateFormat: (event) ->
+        if event.isAllDayEvent()
+            dateFormatKey = 'email date format allday'
+        else
+            dateFormatKey = 'email date format'
+        return @t dateFormatKey
 
-    getLocale: -> return @polyglot.currentLocale
+    render: (name, params, callback) ->
+        name = getViewName name
+        @renderer name, params, callback
 
     # for template localization
     getPolyglot: -> return @polyglot

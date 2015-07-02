@@ -6,7 +6,7 @@ log = require('printit')
 
 Event = require '../models/event'
 {VCalendar} = require 'cozy-ical'
-MailHandler = require '../mails/mail_handler'
+MailHandler = require '../libs/mail_handler'
 localization = require '../libs/localization_manager'
 
 module.exports.fetch = (req, res, next, id) ->
@@ -81,18 +81,8 @@ module.exports.public = (req, res, next) ->
     Event.find id, (err, event) ->
         # If event doesn't exist or visitor hasn't access display 404 page
         if err or not event or not visitor = event.getGuest key
-            # Retreive user localization
-            locale = localization.getLocale()
-
-            # Display 404 page
-            fileName = "404_#{locale}.jade"
-            filePath = path.resolve __dirname, '../../client/', fileName
-            # Usefull for build
-            filePathBuild = path.resolve __dirname, '../../../client/', fileName
-            unless fs.existsSync(filePath) or fs.existsSync(filePathBuild)
-                fileName = '404_en.jade'
             res.status 404
-            res.render fileName
+            res.render localization.getViewName "404"
 
         # If event exists, guess is authorized and request has a status
         # Update status for guess (accepted or declined)
@@ -106,30 +96,14 @@ module.exports.public = (req, res, next) ->
         # Display event.
         else
             # Retrive event data
-            if event.isAllDayEvent()
-                dateFormatKey = 'email date format allday'
-            else
-                dateFormatKey = 'email date format'
-            dateFormat = localization.t dateFormatKey
-            date = event.formatStart dateFormat
-
-            # Retrieve user localization
-            locale = localization.getLocale()
-
-            # Display event
-            fileName = "event_public_#{locale}.jade"
-            filePath = path.resolve __dirname, '../../client/', fileName
-            # Usefull for build
-            filePathBuild = path.resolve __dirname, '../../../client/', fileName
-            unless fs.existsSync(filePath) or fs.existsSync(filePathBuild)
-                fileName = 'event_public_en.jade'
+            date = event.formatStart localization.getDateFormat event
 
             specialCharacters = /[-'`~!@#$%^&*()_|+=?;:'",.<>\{\}\[\]\\\/]/gi
             desc = event.description.replace(specialCharacters, '')
             desc = desc.replace(/\ /g, '-')
             day =  moment(event.start).format("YYYY-MM-DD")
 
-            res.render fileName,
+            res.render localization.getViewName("event_public"),
                 event: event
                 file: "#{day}-#{desc}"
                 date: date
