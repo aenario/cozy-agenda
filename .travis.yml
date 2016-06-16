@@ -13,7 +13,6 @@ services:
 env:
   global:
   - NODE_ENV=test
-  - NAME=appname
   - TOKEN=apptoken
 before_install:
 - npm install -g npm@latest-2
