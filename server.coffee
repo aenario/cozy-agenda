@@ -29,9 +29,6 @@ start = (port, callback) ->
                 Event.initializeData (err2) ->
                     callback err or err2, app, server
 
-
-console.log "env", process.env
-
 if not module.parent
     port = process.env.PORT or 9113
     start port, (err) ->
