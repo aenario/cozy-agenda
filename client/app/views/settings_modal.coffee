@@ -77,7 +77,7 @@ module.exports = class SettingsModals extends BaseView
 
 
     # creates a placeholder for the password
-    getPlaceholder: (password) ->
+    getPlaceholder: (password = '') ->
         return new Array(password.length + 1).join('*')
 
     showPassword: ->

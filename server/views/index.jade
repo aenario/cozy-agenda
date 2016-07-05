@@ -30,7 +30,7 @@ html(lang=lang)
 
     script(src="javascripts/modernizr-2.6.1.js")
     link(rel="stylesheet", href="/fonts/fonts.css")
-    link(rel="stylesheet", href=webpack?'webpack.style.css':'app.css')
+    link(rel="stylesheet", href=webpack?webpack.main.css:'./app.css')
 
     script(src="socket.io/socket.io.js")
 
@@ -38,4 +38,4 @@ html(lang=lang)
     .main-container
 
     script!= imports
-    script(src=webpack?webpack.app.js:'./app.js')
+    script(src=webpack?webpack.main.js:'./app.js')

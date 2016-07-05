@@ -5,6 +5,8 @@ log = require('printit')
 module.exports = Tag = cozydb.getModel 'Tag',
     name : type: String
     color : type: String
+    visible: Boolean
+    slug: String
 
 Tag.byName = (options, callback) ->
     Tag.request 'byName', options, callback

@@ -17,6 +17,11 @@ publicStatic = (req, res, next) ->
 
 viewsDir = path.resolve __dirname, 'views'
 useBuildView = fs.existsSync path.resolve viewsDir, 'index.js'
+try
+    assets = require('../webpack-assets.json')
+catch error
+    assets = main: js: 'app.js', css: 'app.css'
+console.log(assets)
 
 module.exports =
 
@@ -37,7 +42,7 @@ module.exports =
 
         engine:
             js: (path, locales, callback) ->
-                locales.webpack = require('../webpack-assets.json')
+                locales.webpack = assets
                 callback null, require(path)(locales)
 
     development: [

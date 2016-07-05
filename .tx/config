@@ -6,3 +6,10 @@ file_filter = client/app/locales/<lang>.json
 source_file = client/app/locales/en.json
 source_lang = en
 type = KEYVALUEJSON
+
+[cozy-calendar.server]
+file_filter = server/locales/<lang>.json
+source_file = server/locales/en.json
+source_lang = en
+type = KEYVALUEJSON
+

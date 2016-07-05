@@ -1,9 +1,10 @@
+###* global async, t, app, $ ###
+
 BaseView = require '../lib/base_view'
 ComboBox = require 'views/widgets/combobox'
 helpers = require '../helpers'
 request = require '../lib/request'
 
-Event = require '../models/event'
 EventList = require './import_event_list'
 
 
@@ -43,41 +44,45 @@ module.exports = class ImportView extends BaseView
     onFileChanged: ->
         file = @uploader[0].files[0]
         return unless file
-        form = new FormData()
-        form.append "file", file
-        @importButton.find('span').html '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'
-        @importButton.spin 'tiny'
+        Importing = require('collections/importing')
+        window.importing = new Importing(file)
+        return
 
-        # Empty event collection before importing new lists.
-        @eventList.collection.reset()
-        @$('.import-progress').html null
-        @$('.import-errors').html null
-
-        $.ajax
-            url: "import/ical"
-            type: "POST"
-            data: form
-            processData: false
-            contentType: false
-            success: (result) =>
-                if result?.calendar?.name
-                    @calendarCombo.setValue result.calendar.name
-
-                if result?.events?
-                    @showEventsPreview result.events
-
-            error: (xhr) =>
-                try
-                    msg = JSON.parse(xhr.responseText).msg
-                catch e
-                    console.error e
-                    console.error xhr.responseText
-                unless msg?
-                    msg = 'An error occured while importing your calendar.'
-                alert msg
-                @resetUploader()
-                @importButton.spin()
-                @importButton.find('span').html t 'select an icalendar file'
+        # form = new FormData()
+        # form.append "file", file
+        # @importButton.find('span').html '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'
+        # @importButton.spin 'tiny'
+        #
+        # # Empty event collection before importing new lists.
+        # @eventList.collection.reset()
+        # @$('.import-progress').html null
+        # @$('.import-errors').html null
+        #
+        # $.ajax
+        #     url: "import/ical"
+        #     type: "POST"
+        #     data: form
+        #     processData: false
+        #     contentType: false
+        #     success: (result) =>
+        #         if result?.calendar?.name
+        #             @calendarCombo.setValue result.calendar.name
+        #
+        #         if result?.events?
+        #             @showEventsPreview result.events
+        #
+        #     error: (xhr) =>
+        #         try
+        #             msg = JSON.parse(xhr.responseText).msg
+        #         catch e
+        #             console.error e
+        #             console.error xhr.responseText
+        #         unless msg?
+        #             msg = 'An error occured while importing your calendar.'
+        #         alert msg
+        #         @resetUploader()
+        #         @importButton.spin()
+        #         @importButton.find('span').html t 'select an icalendar file'
 
 
     # Show the event preview list. It doesn't display all events at the same

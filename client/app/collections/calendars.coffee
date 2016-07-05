@@ -39,16 +39,6 @@ module.exports = class CalendarCollection extends TagCollection
         @resetFromBase()
 
 
-    _pauseModels: (models, options) ->
-        models.forEach (model) ->
-            SocketListener.pause model, null, options
-
-
-    _resumeModels: (models, options) ->
-        models.forEach (model) ->
-            SocketListener.resume model, null, options
-
-
     # Overrides backbone behaviour
     # Removes a calendar (<=> removes all its events)
     remove: (calendarName, callback) ->

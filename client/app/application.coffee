@@ -76,6 +76,8 @@ module.exports =
         CalendarsCollection = require 'collections/calendars'
         SharingCollection = require 'collections/sharings'
 
+        window.Importing = require 'collections/importing'
+
         @tags = new TagCollection()
         @events = new EventCollection()
         @contacts = new ContactCollection()

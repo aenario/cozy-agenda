@@ -1,6 +1,7 @@
 
 ScheduleItem = require './scheduleitem'
 Sharing = require './sharing'
+ICAL = require 'ical.js'
 
 module.exports = class Event extends ScheduleItem
 
@@ -325,3 +326,100 @@ module.exports = class Event extends ScheduleItem
     sync: (method, model, options) ->
         @prepare()
         super method, model, options
+
+
+    @attendeesFromJC
+
+    @fromJCal: (jcal) ->
+        icalEvent = new ICAL.Event new ICAL.Component jcal
+        console.log event
+        debugger
+        return icalEvent
+
+        # return new Event(
+        #     start           : String
+        #     end             : String
+        #     place           : String
+        #     details         : String
+        #     description     : String
+        #     rrule           : String
+        #     tags            : [String]
+        #     attendees       : [Object]
+        #     related         : type: String, default: null
+        #     timezone        : String
+        #     alarms          : [Object]
+        #     created         : String
+        #     caldavuri       : String
+        #     uuid            : String
+        #     lastModification: String
+        #     shareID         : String
+        # )
+        #
+        #
+        # event = new Event()
+        # now =  moment().tz('UTC').toISOString()
+        #
+        # timezone = model.timezone or 'UTC'
+        #
+        # event.id = icalEvent.uid if icalEvent.uid?
+        # event.uid = icalEvent.uid if icalEvent.uid?
+        # event.description = icalEvent.summary or ''
+        # event.details = icalEvent.description or ''
+        # event.place = icalEvent.location
+        # delete model.rrule?.bynmonthday
+        # delete model.rrule?.bynweekday
+        # event.rrule = new RRule(model.rrule).toString()
+        # defaultCozyStatus = 'INVITATION-NOT-SENT'
+        # event.attendees = model.attendees?.map (attendee, index) ->
+        #     status = attendee.details?.status or defaultCozyStatus
+        #     status = defaultCozyStatus if status is 'NEEDS-ACTION'
+        #     email = attendee.email
+        #     id = index + 1
+        #     contactid = null
+        #     return {id, email, contactid, status}
+        # event.created = model.created if model.created?
+        # stampDate = moment.tz(model.stampDate, 'UTC').toISOString()
+        # event.lastModification = model.lastModification \
+        #                          or stampDate \
+        #                          or now
+        # event.mozLastack = model.mozLastack
+        #
+        # if model.allDay
+        #     event.start = moment.tz model.startDate, 'UTC'
+        #         .format Event.dateFormat
+        #     event.end = moment.tz model.endDate, 'UTC'
+        #         .format Event.dateFormat
+        # else
+        #     if timezone isnt 'UTC'
+        #         start = moment.tz model.startDate, timezone
+        #         end = moment.tz model.endDate, timezone
+        #     else
+        #         start = moment.tz model.startDate, 'UTC'
+        #         end = moment.tz model.endDate, 'UTC'
+        #
+        #     # Format, only RRule doesn't use UTC
+        #     if model.rrule?
+        #         event.timezone = timezone
+        #         event.start = start.format Event.ambiguousDTFormat
+        #         event.end = end.format Event.ambiguousDTFormat
+        #     else
+        #         event.start = start.toISOString()
+        #         event.end = end.toISOString()
+        #
+        # # Alarms reminders.
+        # alarms = []
+        # vevent.subComponents.forEach (component) ->
+        #     if component.name is not 'VALARM'
+        #         return
+        #
+        #     alarmModel = component.model
+        #     trigg = alarmModel.trigger
+        #     action = alarmModel.action
+        #
+        #     if trigg and trigg.match(Event.alarmTriggRegex)
+        #         alarms.push trigg: trigg, action: action
+        #
+        # event.alarms = alarms if alarms
+        # event.tags = [defaultCalendar]
+        #
+        # return event

@@ -15,6 +15,8 @@ module.exports = Contact = cozydb.getModel 'Contact',
     initials      : String
     sortedName    : String
     ref           : String
+    slug          : String
+    description   : String
     _attachments  : Object
 
 isCozyDataPoint = (dp) ->
